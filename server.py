@@ -55,6 +55,37 @@ def create_reddit_post_collection(db):
     })
     print(result)
 
+def create_vehicle_list_collection(db):
+    result = db.create_collection("vehiclelist", validator={
+        '$jsonSchema': {
+            'bsonType': 'object',
+            'additionalProperties': True,
+            'required': ['model', 'color', 'date', 'vehicle'],
+            'properties': {
+                'model': {
+                    'bsonType': 'string'
+                },
+                'color': {
+                    'bsonType': 'string'
+                },
+                'vehicle': {
+                    'bsonType': 'string'
+                },
+                'make': {
+                    'bsonType': 'string'
+                },
+                'date': {
+                    'bsonType': 'date',
+                },
+                'location': {
+                    'bsonType': 'string'
+                }
+            }
+        }
+    })
+    print(result)
+
+
 @app.route("/")
 def hello():
     redirect = request.args.get('redirect')
@@ -71,9 +102,11 @@ def get_render_template():
 def get_redirect():
      return redirect('/?redirect=redirect')
 
+# this is equivalent to profile/:username in express
 @app.route("/profile/<username>")
 def profile(username):
   return "You're viewing {}'s profile.".format(username)
+  # equivalent to return f"You're viewing {usernames}'s profile"
 
 @app.route("/r/<string:subreddit>")
 def reddit(subreddit):
@@ -118,10 +151,30 @@ def create_subreddit(user_id, subreddit):
         db.redditpost.update_one(filter, newValues)
         subreddits = db.redditpost.find({'subreddit': subreddit})
         return json.loads(parse_json(subreddits))
-        
+
+
+@app.route("/vehicle/<string:vehicle>/<string:make>", methods = ['POST'])
+def create_vehicle(make, vehicle):
+    data = request.form
+    # url?local=USa
+    location = request.args.get('locale')
+    if request.method == 'POST':
+        vehicle = {
+            'model': data.get('model'),
+            'color': data.get('color'),
+            'date': datetime.now(),
+            'make': make,
+            'vehicle': vehicle,
+            'location': location
+        }
+        vehicle_id = db.vehiclelist.insert_one(vehicle).inserted_id
+        return str(vehicle_id)        
+        # post_id = db.redditpost.insert_one(post).inserted_id
+        # return str(post_id)
 
 # when a file is ran as the entry point of a project, its '__name__' global property will be '__main__', if the module was imported, this will instead be the name of the module
 # This conditional is to ensure that we do not run this server unintentionally if it wasn't the entry point for the project.
 if __name__ == "__main__":
     app.run()
     create_reddit_post_collection(db)
+    create_vehicle_list_collection(db)

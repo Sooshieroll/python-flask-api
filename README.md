@@ -20,15 +20,15 @@ If you look inside of the 'requirements.txt' file you'll see all packages used t
 
 You can install these packages using the following command
 
-'''
+```
 pip install -r requirements.txt
-'''
+```
 
 you can have pip update the requirements.txt file for you using the following command
 
-'''
+```
 pip freeze > requirements.txt
-'''
+```
 
 # What's inside of this project
 
